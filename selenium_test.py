@@ -106,32 +106,40 @@ def extract_log(game_id):
 
     time.sleep(1)
     
+    return
     
     # ready
     try:
         wait = WebDriverWait(driver, 10)
         p="/html/body/div[2]/div/div/div[1]/div/my-table/table-buttons/div/div[1]"
         ready = wait.until(EC.element_to_be_clickable((By.XPATH,p)))
+        ready.click()
     except TimeoutException as e:
         print("ready loading timeout")
     except:
         print("ready error") 
-
-    ready.click()
     
     
     # check can load game page
     try:
         wait = WebDriverWait(driver, 15)
         gamepage = wait.until(EC.element_to_be_clickable((By.CLASS_NAME,"game-page")))
+        print("game page loading success ")
     except TimeoutException as e:
         print("game page loading timeout")  
     except:
         print("game page loading  error") 
 
-    print("game page loading success ")   
-    
-    
+    # log scroll get
+    try:
+        wait = WebDriverWait(driver, 10)
+        p="/html/body/div[2]/div/div/game-area/div[7]/div/div"
+        log_scroll = driver.find_element()
+        ready.click()
+    except TimeoutException as e:
+        print("ready loading timeout")
+    except:
+        print("ready error")     
     
     
     
