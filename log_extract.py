@@ -8,6 +8,7 @@ import warnings
 from selenium.common.exceptions import TimeoutException
 from dotenv import load_dotenv
 import os
+import re
 
 env = ".env"
 
@@ -20,23 +21,83 @@ warnings.simplefilter('ignore')
 
 driver = webdriver.Edge()  
 
-url="file:///c:/Users/moriyoshi/Documents/research/celenium-bot-research/logtest.html"
-driver.get(url)
+driver.get(os.environ.get("LOCALTEST"))
 
+card_collection=[
+    "Copper","Silver","Gold","Estate","Duchy","Province","Curse","Cellar","Chapel","Moat","Harbinger",
+    "Merchant","Vassal","Village","Workshop","Bureaucrat","Gardens","Militia","Moneylender","Poacher","Remodel","Smithy",
+    "Throne Room","Bandit","Council Room","Festival","Laboratory","Library","Market","Mine","Sentry","Witch","Artisan"
+]
 
-lines=driver.find_elements(By.CLASS_NAME,"log-line")
-print(len(lines))
+# get card list
+def get_card_list(webdriver):
+    
+    # Rearrange A according to the order of B
+    def sort_according_to_order(A, B):
+        index_dict = {value: index for index, value in enumerate(B)}
+        sorted_A = sorted(A, key=lambda x: index_dict[x])
+        return sorted_A
+    
+    p=f"//div[@class='card-stack-layer name-layer']"
+    cards=webdriver.find_elements(By.XPATH,p)
 
-for l in range(len(lines)):
-    p=f"/html/body/div[2]/div/div/game-area/div[7]/div/div/div[{l}]//div[@class='log-line-block']/span"
-    e=driver.find_elements(By.XPATH,p)
+    card_list=[c.text for c in cards]
 
-    t=""
+    # extract unique and remove empty
+    card_list=list(set(card_list))
+    card_list=list(filter(None, card_list))
 
-    for w in e:
-        t+=w.text+" "
+    card_list=sort_according_to_order(card_list, card_collection)
 
-    print(t)
-    pass
+    #print(card_list)
+    return card_list
 
-input()
+# get raw log contents
+def get_log_raw(webdriver):
+    p="//div[@class='log-line-block']/span"
+    lines=webdriver.find_elements(By.XPATH,p)
+
+    # get text content
+    loglines=[c.text for c in lines]
+    # remove empty string
+    loglines=list(filter(None, loglines))
+    # join list elements and generate string
+    lograw=' '.join(loglines)
+
+    return lograw
+    
+def get_player_list(lograw:str):
+    abbre=r'Coppers \. (.*?)  starts with  3 Estates .'
+
+    ab_c=re.compile(abbre)
+
+    abb_list = ab_c.findall(lograw)
+
+    return abb_list
+    
+    
+def format_log_raw(lograw:str):
+    return 
+    
+    for a in abb_list:
+        lograw=lograw.replace(f" {a} ",f"\n{a} ")
+        
+    lograw=lograw.replace(f" + ",f" +")
+    lograw=lograw.replace(f" +$ ",f" +$")
+    lograw=lograw.replace(f" )",f")")
+    lograw=lograw.replace(f" Turn ",f"\n\nTurn ")
+    log=""
+    
+    print(lograw)
+
+    
+    # add game end dialog
+    log+="game end."
+    
+    return 
+
+cl=get_card_list(driver)
+print(cl)
+l=get_log_raw(driver)
+
+get_player_list(l)
